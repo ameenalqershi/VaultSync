@@ -93,7 +93,7 @@ public sealed class BackupResilienceSupplement846Tests : IDisposable
             service.PreflightBackupAsync(f.Project, f.Destination,
                 useArchiveMode: archive, cacheTtl: TimeSpan.FromHours(1)));
         InvalidOperationException execution = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            service.RunBackupAsync(f.Project, f.Destination, useArchiveMode: archive));
+            service.RunBackupAsync(f.Project, f.Destination, isAuto: false, useArchiveMode: archive));
         Assert.Contains("not exist or is not accessible", preflight.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("not exist or is not accessible", execution.Message, StringComparison.OrdinalIgnoreCase);
         Assert.False(Directory.Exists(f.Destination));
