@@ -1,0 +1,53 @@
+name: Issue 850 cross-platform validation (temporary fork QA)
+on:
+  push:
+    branches:
+      - qa/850-cross-platform-20261116
+permissions:
+  contents: read
+concurrency:
+  group: issue850-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    name: Source+Release+Core / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macos-15]
+    steps:
+      - name: Checkout exact PR source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Verify QA derives from PR 850 commit and adds only workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "0b01df082109604c6c5456a7863a107b8816e013"
+          git diff HEAD^ HEAD --name-only | grep -Fx .github/workflows/issue-850-cross-platform-qa.yml
+          test "$(git diff HEAD^ HEAD --name-only | wc -l | tr -d ' ')" = 1
+          git diff --check HEAD^ HEAD
+      - name: Install pinned .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore solution
+        run: dotnet restore VaultSync.sln
+      - name: Build full solution Release with warnings as errors
+        run: dotnet build VaultSync.sln --configuration Release --no-restore -warnaserror -p:UseSharedCompilation=false -m:1
+      - name: Run targeted BUG-19048 tests
+        run: dotnet test tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~FilterServiceCacheRegressionTests" --logger "trx;LogFileName=issue850-targeted.trx"
+      - name: Run full Core tests
+        run: dotnet test tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=issue850-core.trx"
+      - name: Publish test receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue850-${{ matrix.os }}-trx
+          path: '**/TestResults/*.trx'
+          if-no-files-found: warn
+          retention-days: 5
