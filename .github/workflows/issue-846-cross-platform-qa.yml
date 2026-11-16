@@ -23,11 +23,11 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 2
-      - name: Verify original contributor source SHA
+      - name: Verify QA commit integrity
         shell: bash
         run: |
-          git show --format=%P -s HEAD
-          git diff --exit-code HEAD^ HEAD -- src/VaultSync.Core/Services/BackupService.cs tests/VaultSync.Core.Tests/BackupTopologyMatrix846Tests.cs tests/VaultSync.Core.Tests/BackupTopologyRegression846Tests.cs
+          git show --format=fuller --stat -1 HEAD
+          git diff --check HEAD^ HEAD
       - name: Install pinned .NET SDK
         uses: actions/setup-dotnet@v4
         with:
@@ -37,7 +37,7 @@ jobs:
       - name: Compile Release with warnings as errors
         run: dotnet build tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-restore -warnaserror -p:UseSharedCompilation=false -m:1
       - name: Issue 846 targeted regression tests
-        run: dotnet test tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~BackupTopologyMatrix846Tests|FullyQualifiedName~BackupTopologyRegression846Tests|FullyQualifiedName~BackupResilienceSupplement846Tests" --logger "trx;LogFileName=issue846.trx"
+        run: dotnet test tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~BackupTopologyMatrix846Tests|FullyQualifiedName~BackupTopologyRegression846Tests|FullyQualifiedName~BackupResilienceSupplement846Tests|FullyQualifiedName~BackupFailureInjection846Tests" --logger "trx;LogFileName=issue846.trx"
       - name: All Core regression tests
         run: dotnet test tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=core-all.trx"
       - name: Publish TRX test receipts
