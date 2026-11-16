@@ -37,7 +37,7 @@ jobs:
       - name: Compile Release with warnings as errors
         run: dotnet build tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-restore -warnaserror -p:UseSharedCompilation=false -m:1
       - name: Issue 846 targeted regression tests
-        run: dotnet test tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~BackupTopologyMatrix846Tests|FullyQualifiedName~BackupTopologyRegression846Tests" --logger "trx;LogFileName=issue846.trx"
+        run: dotnet test tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-build --no-restore --filter "FullyQualifiedName~BackupTopologyMatrix846Tests|FullyQualifiedName~BackupTopologyRegression846Tests|FullyQualifiedName~BackupResilienceSupplement846Tests" --logger "trx;LogFileName=issue846.trx"
       - name: All Core regression tests
         run: dotnet test tests/VaultSync.Core.Tests/VaultSync.Core.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=core-all.trx"
       - name: Publish TRX test receipts
