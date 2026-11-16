@@ -197,7 +197,7 @@ public sealed class BackupResilienceSupplement846Tests : IDisposable
             f.Destination, backup.Path, BackupArchiveCryptoService.PlainArchiveFileName);
         using ZipArchive archive = ZipFile.OpenRead(zipPath);
         Assert.Equal(2, archive.Entries.Count);
-        ZipArchiveEntry? entry = archive.Entries.SingleOrDefault(e =>
+        ZipArchiveEntry entry = archive.Entries.SingleOrDefault(e =>
             e.FullName.Replace('\\', '/') == "nested-بيانات/payload.bin");
         Assert.NotNull(entry);
         using Stream stream = entry!.Open();
